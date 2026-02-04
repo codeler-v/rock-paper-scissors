@@ -1,60 +1,89 @@
-console.log('Hello, World!');
-let humanScore = 0;
+let userScore = 0;
 let computerScore = 0;
+let isGameActive = false;
+
+const playBtn = document.getElementById("play-btn");
+const resetBtn = document.getElementById("reset-btn");
+const choicesBtns = document.querySelectorAll(".choice-btn");
+
+function setChoicesBtn(enabled){
+    choicesBtns.forEach(btn => btn.disabled = !enabled);
+}
+
 function getComputerChoice(){
-    const num = Math.random();
-    if(num > .66){
-        return 'Rock';
-    }else if(num < .33){
-        return 'Paper';
-    }else{
-        return 'Scissors';
-    }
+    const choices = ['rock', 'paper', 'scissors'];
+     const randomIndex = Math.floor(Math.random() * choices.length);
+    return choices[randomIndex];
 }
 
-function getHumanChoice(roundNum){
-    const humanChoice = prompt(`Round ${roundNum} \n Enter a letter : \n R-Rock \n P-Paper \n S-Scissors`);
-    switch(humanChoice.toUpperCase()){
-        case 'R':
-            return 'Rock';
-            break;
-        case 'P':
-            return 'Paper';
-            break;
-        case 'S':
-            return 'Scissor';
-            break;
-    }
-}
-function playRound(humanChoice,computerChoice){
-    if (humanChoice === computerChoice){
-        return 'Draw';
-    };
+function getWinner(user,computer){
+    if(user===computer) return "draw";
 
-    if(
-        (humanChoice==='Rock' && computerChoice==='Scissors') ||
-        (humanChoice==='Scissors' && computerChoice==='Paper') ||
-        (humanChoice==='Paper' && computerChoice==='Rock')
+    if((user==='rock' && computer === 'scissors') ||
+    (user==='paper' && computer === 'rock') ||
+    (user==='scissors' && computer === 'paper')
     ){
-        return humanScore++;
-    }else{
-        return computerScore++;
+        return "user";
+    }
+    else{
+        return "computer";
     }
 }
 
-function playGame(){
-    for (i=1;i<=5;i++){
-        const humanSelection = getHumanChoice(i);
-        const computerSelection = getComputerChoice();
-        playRound(humanSelection,computerSelection);
-    };
-    if (humanScore > computerScore){
-        alert(`You win!. \n Your Score:${humanScore} vs Computer: ${computerScore}` );
-    }else if (humanScore < computerScore){
-        alert(`You lose. \n Your Score:${humanScore} vs Computer: ${computerScore}` );
-    }else{
-        alert(`It's a draw. \n Your Score:${humanScore} vs Computer: ${computerScore}`)
-    }
+function updateSelection(user,computer){
+    document.getElementById("user-choice").textContent = user;
+    document.getElementById("computer-choice").textContent = computer;
 }
 
-playGame();
+function updateScore(winner){
+    if(winner ==="user") userScore++;
+    if(winner ==="computer") computerScore++;
+
+    document.getElementById("user-score").textContent = userScore;
+    document.getElementById("computer-score").textContent = computerScore;
+}
+
+function endGame(winner){
+    isGameActive = false;
+    setChoicesBtn(false);
+    resetBtn.disabled = false;
+    alert(`${winner} win the game!`)
+}
+choicesBtns.forEach(button => {
+    button.addEventListener("click", () =>{
+        if(!isGameActive) return;
+
+        const userChoice = button.id;
+        const computerChoice = getComputerChoice();
+
+        updateSelection(userChoice, computerChoice);
+
+        const winner = getWinner(userChoice, computerChoice);
+        updateScore(winner);
+
+        if(userScore === 5) endGame("You");
+        if(computerScore === 5) endGame("Computer");
+    });
+});
+
+playBtn.addEventListener("click", () =>{
+    isGameActive = true;
+    playBtn.disabled = true;
+    resetBtn.disabled = true;
+    setChoicesBtn(true);
+});
+
+resetBtn.addEventListener("click", () =>{
+    userScore = 0;
+    computerScore = 0;
+    isGameActive = false;
+
+    document.getElementById("user-score").textContent = 0;
+    document.getElementById("computer-score").textContent = 0;
+    document.getElementById("user-choice").textContent = "—";
+    document.getElementById("computer-choice").textContent = "—";
+
+    playBtn.disabled = false;
+    resetBtn.disabled = true;
+    setChoicesBtn(false);
+})
